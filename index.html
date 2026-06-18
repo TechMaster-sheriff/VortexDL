@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Watch Ad - VortexDL</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://sdk.adsgram.ai/latest/adsgram.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0b0f1e;
+            --surface: #12172b;
+            --surface2: #1a2040;
+            --border: rgba(120, 80, 255, 0.18);
+            --accent: #7c4dff;
+            --accent-soft: #a67cff;
+            --accent-glow: rgba(124, 77, 255, 0.25);
+            --text: #e4deff;
+            --muted: #7b7299;
+            --success: #4ade80;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            background-image:
+                radial-gradient(ellipse 60% 40% at 50% 0%, rgba(124,77,255,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 30% at 80% 100%, rgba(124,77,255,0.06) 0%, transparent 60%);
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px 28px;
+            max-width: 360px;
+            width: 100%;
+            text-align: center;
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.04) inset,
+                0 24px 60px rgba(0,0,0,0.5),
+                0 0 80px var(--accent-glow);
+            position: relative;
+            overflow: hidden;
+            animation: cardIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: scale(0.92) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(167,124,255,0.5), transparent);
+        }
+
+        .icon-wrap {
+            width: 68px;
+            height: 68px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #1e1545, #2d1f5c);
+            border: 1px solid rgba(124,77,255,0.35);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(124,77,255,0.2);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .icon-wrap svg { width: 32px; height: 32px; }
+
+        h2 {
+            color: var(--text);
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 0.82rem;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        /* Ad container */
+        .ad-container {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            min-height: 180px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ad-container::after {
+            content: 'AD';
+            position: absolute;
+            top: 8px; right: 10px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            background: rgba(255,255,255,0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            z-index: 2;
+        }
+
+        .ad-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            color: var(--muted);
+            font-size: 0.82rem;
+        }
+
+        .ad-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(124,77,255,0.2);
+            border-top-color: var(--accent-soft);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Progress */
+        .progress-wrap { margin-bottom: 14px; }
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            color: var(--muted);
+            margin-bottom: 7px;
+        }
+        .progress {
+            background: rgba(124,77,255,0.12);
+            border-radius: 100px;
+            height: 5px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #6c3fc5, #b46fff);
+            height: 100%;
+            width: 0%;
+            border-radius: 100px;
+            transition: width 0.9s linear;
+            position: relative;
+        }
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: 0; top: 0; bottom: 0;
+            width: 12px;
+            background: white;
+            border-radius: 100px;
+            opacity: 0.4;
+            filter: blur(2px);
+        }
+
+        /* Timer */
+        .timer-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .timer-badge {
+            background: rgba(124,77,255,0.12);
+            border: 1px solid rgba(124,77,255,0.25);
+            border-radius: 100px;
+            padding: 7px 18px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--accent-soft);
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: all 0.3s;
+        }
+        .timer-badge.ready {
+            background: rgba(74,222,128,0.1);
+            border-color: rgba(74,222,128,0.3);
+            color: var(--success);
+        }
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--accent-soft);
+            border-radius: 50%;
+            animation: pulse 1.2s ease-in-out infinite;
+        }
+        .timer-badge.ready .pulse-dot {
+            background: var(--success);
+            animation: pulseReady 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.7); }
+        }
+        @keyframes pulseReady {
+            0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
+            50% { opacity: 0.8; transform: scale(1.3); box-shadow: 0 0 0 8px rgba(74,222,128,0); }
+        }
+
+        /* Button */
+        .btn {
+            background: linear-gradient(160deg, #8b5cf6, #6027c9);
+            border: none;
+            border-radius: 14px;
+            padding: 15px;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 0 #3a1680, 0 8px 24px rgba(98,39,201,0.35);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: -0.01em;
+            transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+            animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn.show { display: flex; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #3a1680, 0 12px 30px rgba(98,39,201,0.45); }
+        .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #3a1680; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%);
+            border-radius: 14px 14px 0 0;
+            pointer-events: none;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+        .spinner {
+            width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            display: none;
+        }
+
+        /* Confetti */
+        .confetti-container {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .confetti-piece {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            animation: confettiFall 1s ease-out forwards;
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Sparkle */
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: sparkle 0.8s ease-out forwards;
+        }
+        @keyframes sparkle {
+            0% { opacity: 1; transform: translate(0,0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="confetti-container" id="confetti"></div>
+
+    <div class="card" id="card">
+        <div class="icon-wrap">
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="5" width="28" height="18" rx="3" stroke="#a67cff" stroke-width="2" fill="none"/>
+                <path d="M12 27h8M16 23v4" stroke="#a67cff" stroke-width="2" stroke-linecap="round"/>
+                <path d="M13 12.5l6 3.5-6 3.5V12.5z" fill="#a67cff"/>
+            </svg>
+        </div>
+
+        <h2>Watch to Unlock</h2>
+        <p class="subtitle">Watch this short ad to get your free TikTok download.</p>
+
+        <!-- AdsGram Ad Container -->
+        <div class="ad-container" id="adContainer">
+            <div class="ad-loading" id="adLoading">
+                <div class="ad-spinner"></div>
+                <span>Loading ad...</span>
+            </div>
+        </div>
+
+        <div class="progress-wrap">
+            <div class="progress-label">
+                <span>Progress</span>
+                <span id="pct">0%</span>
+            </div>
+            <div class="progress">
+                <div class="progress-fill" id="progress"></div>
+            </div>
+        </div>
+
+        <div class="timer-row">
+            <div class="timer-badge" id="timerBadge">
+                <span class="pulse-dot" id="dot"></span>
+                <span id="timer">Watching · 15s left</span>
+            </div>
+        </div>
+
+        <button class="btn" id="doneBtn" onclick="completeReward()">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.5 14.5l-4-4 1.41-1.41L10.5 13.67l6.09-6.09 1.41 1.41-7.5 7.42z" fill="white"/>
+            </svg>
+            <span id="btnText">Download Now</span>
+            <div class="spinner" id="spinner"></div>
+        </button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const choice = urlParams.get('choice') || '1';
+        const BLOCK_ID = '33594';
+
+        let time = 15;
+        const total = 15;
+        let adCompleted = false;
+
+        const timerEl = document.getElementById('timer');
+        const progressEl = document.getElementById('progress');
+        const pctEl = document.getElementById('pct');
+        const doneBtn = document.getElementById('doneBtn');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('spinner');
+        const badge = document.getElementById('timerBadge');
+        const adLoading = document.getElementById('adLoading');
+
+        // ═══════════════════════════════════════
+        // START REAL ADSGRAM REWARDED AD
+        // ═══════════════════════════════════════
+
+        async function startAd() {
+            try {
+                const adsgram = new Adsgram();
+                
+                await adsgram.showRewardAd({
+                    blockId: BLOCK_ID,
+                    onReward: () => {
+                        adCompleted = true;
+                        adLoading.style.display = 'none';
+                        startCountdown();
+                        spawnConfetti();
+                    },
+                    onError: (error) => {
+                        console.log('Ad error, unlocking anyway:', error);
+                        adCompleted = true;
+                        adLoading.style.display = 'none';
+                        startCountdown();
+                    },
+                    onClose: () => {
+                        if (!adCompleted) {
+                            adLoading.innerHTML = '<span style="color:#fca5a5">⚠️ Please watch the full ad.</span>';
+                            setTimeout(startAd, 1000);
+                        }
+                    }
+                });
+            } catch (e) {
+                console.log('AdsGram error, unlocking:', e);
+                adCompleted = true;
+                adLoading.style.display = 'none';
+                startCountdown();
+            }
+        }
+
+        // ═══════════════════════════════════════
+        // COUNTDOWN AFTER AD
+        // ═══════════════════════════════════════
+
+        function startCountdown() {
+            const countdown = setInterval(() => {
+                time--;
+                const pct = Math.round(((total - time) / total) * 100);
+                progressEl.style.width = pct + '%';
+                pctEl.textContent = pct + '%';
+
+                if (time > 10) {
+                    timerEl.textContent = 'Watching · ' + time + 's left';
+                } else if (time > 5) {
+                    timerEl.textContent = 'Almost done · ' + time + 's';
+                } else if (time > 0) {
+                    timerEl.textContent = 'Hang on · ' + time + 's';
+                } else {
+                    clearInterval(countdown);
+                    timerEl.textContent = '✅ Ready to download!';
+                    badge.classList.add('ready');
+                    doneBtn.classList.add('show');
+                }
+            }, 1000);
+        }
+
+        // ═══════════════════════════════════════
+        // CONFETTI
+        // ═══════════════════════════════════════
+
+        function spawnConfetti() {
+            const container = document.getElementById('confetti');
+            const colors = ['#7c4dff', '#a67cff', '#4ade80', '#fbbf24', '#f472b6', '#38bdf8'];
+            
+            for (let i = 0; i < 40; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.left = Math.random() * 100 + '%';
+                piece.style.top = -(Math.random() * 20 + 10) + 'px';
+                piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.animationDuration = (Math.random() * 1 + 0.8) + 's';
+                piece.style.animationDelay = Math.random() * 0.5 + 's';
+                piece.style.width = (Math.random() * 6 + 4) + 'px';
+                piece.style.height = (Math.random() * 6 + 4) + 'px';
+                container.appendChild(piece);
+                setTimeout(() => piece.remove(), 1500);
+            }
+        }
+
+        // ═══════════════════════════════════════
+        // DOWNLOAD BUTTON
+        // ═══════════════════════════════════════
+
+        function completeReward() {
+            if (window.navigator && window.navigator.vibrate) {
+                window.navigator.vibrate(30);
+            }
+
+            doneBtn.disabled = true;
+            btnText.textContent = 'Starting Download...';
+            spinner.style.display = 'block';
+
+            tg.sendData(JSON.stringify({ ad_watched: true, choice: choice }));
+            setTimeout(() => tg.close(), 600);
+        }
+
+        // ═══════════════════════════════════════
+        // START
+        // ═══════════════════════════════════════
+
+        startAd();
+    </script>
+</body>
+</html>
