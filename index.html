@@ -47,7 +47,7 @@
         
         .ad-container {
             background: var(--surface2); border: 1px solid var(--border);
-            border-radius: 14px; min-height: 180px; margin-bottom: 20px;
+            border-radius: 14px; min-height: 250px; margin-bottom: 20px;
             display: flex; align-items: center; justify-content: center;
             position: relative; overflow: hidden;
         }
@@ -93,12 +93,14 @@
         <h2>Watch to Unlock</h2>
         <p class="subtitle">Watch this short ad to get your free TikTok download.</p>
         
-        <!-- AdSterra Native Banner Container -->
+        <!-- AdSterra Native Banner -->
         <div class="ad-container" id="adContainer">
             <div class="ad-loading" id="adLoading">
                 <div class="ad-spinner"></div>
                 <span>Loading ad...</span>
             </div>
+            <!-- AdSterra Ad -->
+            <div id="container-0caa08640b45168b254e28a159c90198"></div>
         </div>
         
         <div class="progress-wrap">
@@ -119,8 +121,8 @@
         </button>
     </div>
 
-    <!-- AdSterra Social Bar -->
-    <script src="https://pl29800982.effectivecpmnetwork.com/c2/6b/d0/c26bd0b33f97315849ec778fbb86f4c0.js"></script>
+    <!-- AdSterra Script -->
+    <script async="async" data-cfasync="false" src="https://pl29800896.effectivecpmnetwork.com/0caa08640b45168b254e28a159c90198/invoke.js"></script>
 
     <script>
         const tg = window.Telegram.WebApp;
@@ -128,9 +130,8 @@
         
         const urlParams = new URLSearchParams(window.location.search);
         const choice = urlParams.get('choice') || '1';
-        const BLOCK_ID = '33594';
         
-        let time = 15, adCompleted = false;
+        let time = 15;
         const timerEl = document.getElementById('timer');
         const progressEl = document.getElementById('progress');
         const pctEl = document.getElementById('pct');
@@ -138,41 +139,29 @@
         const badge = document.getElementById('timerBadge');
         const adLoading = document.getElementById('adLoading');
 
-        // Hide loading spinner when AdSterra loads
+        // Hide loading when AdSterra loads
         setTimeout(() => {
             if (adLoading) adLoading.style.display = 'none';
-        }, 3000);
+        }, 2500);
 
-        // Try AdsGram, fallback to countdown
-        async function startAd() {
-            try {
-                if (typeof Adsgram !== 'undefined') {
-                    const adsgram = new Adsgram();
-                    await adsgram.showRewardAd({
-                        blockId: BLOCK_ID,
-                        onReward: () => { adCompleted = true; adLoading.style.display = 'none'; startCountdown(); },
-                        onError: () => { adLoading.innerHTML = '<span>📺 Ad loading...</span>'; setTimeout(() => { adLoading.style.display = 'none'; startCountdown(); }, 1500); },
-                        onClose: () => { if (!adCompleted) { adLoading.innerHTML = '<span>⚠️ Please watch full ad</span>'; setTimeout(startAd, 1500); } }
-                    });
-                } else {
-                    adLoading.innerHTML = '<span>📺 Loading...</span>';
-                    setTimeout(() => { adLoading.style.display = 'none'; startCountdown(); }, 2000);
-                }
-            } catch(e) {
-                adLoading.innerHTML = '<span>📺 Starting...</span>';
-                setTimeout(() => { adLoading.style.display = 'none'; startCountdown(); }, 2000);
-            }
-        }
+        // Start countdown immediately
+        startCountdown();
 
         function startCountdown() {
             const countdown = setInterval(() => {
                 time--;
                 const pct = Math.round(((15 - time) / 15) * 100);
                 progressEl.style.width = pct + '%'; pctEl.textContent = pct + '%';
+                
                 if (time > 10) timerEl.textContent = 'Watching · ' + time + 's';
                 else if (time > 5) timerEl.textContent = 'Almost done · ' + time + 's';
                 else if (time > 0) timerEl.textContent = 'Hang on · ' + time + 's';
-                else { clearInterval(countdown); timerEl.textContent = '✅ Ready!'; badge.classList.add('ready'); doneBtn.classList.add('show'); }
+                else { 
+                    clearInterval(countdown); 
+                    timerEl.textContent = '✅ Ready!'; 
+                    badge.classList.add('ready'); 
+                    doneBtn.classList.add('show'); 
+                }
             }, 1000);
         }
 
@@ -182,8 +171,6 @@
             tg.sendData(JSON.stringify({ ad_watched: true, choice: choice }));
             setTimeout(() => tg.close(), 600);
         }
-
-        startAd();
     </script>
 </body>
 </html>
